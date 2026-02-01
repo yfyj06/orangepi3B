@@ -1,10 +1,7 @@
 # orangepi3B
 
-https://opensource.rock-chips.com/wiki_Boot_option#rkxx_loader_vx.xx.xxx.bin
-
-
+---
 # IDBLoader 预引导加载程序
-
 ## 概述
 
 IDBLoader（IDBlock Loader）是 Rockchip 格式的预引导加载程序，专门用于 SoC 启动时的早期初始化。它在系统启动的最早阶段工作，承担着承上启下的关键作用，是 Rockchip BootRom 与后续引导程序之间的桥梁。
@@ -54,12 +51,6 @@ IDBLoader.img 包含三个核心组件，它们协同工作完成启动初始化
 ---
 
 ## 配置方法
-
-### 方法一：从 Rockchip 发布加载器获取
-
-此方法适用于 eMMC 启动场景，使用 Rockchip 官方预编译的二进制加载器文件。
-
-#### 操作步骤
 
 如果使用 Rockchip 发布的加载器，不需要单独打包 idbloader.img，可以直接从 eMMC 获取或使用烧录工具加载：
 
@@ -188,7 +179,7 @@ gpt write mmc 0 $partitions
 
 | 版本 | 日期 | 更新内容 |
 |-----|------|---------|
-| 1.0 | 2024-01 | 初始版本，涵盖 IDBLoader 基本概念和配置方法 |
+| 2.0 | 2026/2/1 | 初始版本，涵盖 IDBLoader 基本概念和配置方法 |
 
 ---
 
