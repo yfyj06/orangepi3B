@@ -152,8 +152,9 @@ dd if=rootfs.img of=sdb seek=262144
 ```
 In order to make sure everything has write to SD card before unpluged, recommand to run below command:
 为了确保所有东西在拔掉电源前都写入 SD 卡，建议执行以下命令：
-
+```bash
 sync
+```
 Note, when using boot from SD card, need to update the kernel cmdline(which is in extlinux.conf) for the correct root value.
 注意，使用 SD 卡启动时，需要更新内核 cmdline（extlinux.conf 中）以获得正确的根值。
 
@@ -167,7 +168,7 @@ gpt write mmc 0 $partitions
 ```
 
 ## 参考资源
-- **https://opensource.rock-chips.com/wiki_Boot_option#rkxx_loader_vx.xx.xxx.bin
+- https://opensource.rock-chips.com/wiki_Boot_option#rkxx_loader_vx.xx.xxx.bin
 - **Rockchip 官方开源仓库**：https://opensource.rock-chips.com/
 - **Rockchip rkbin 仓库**：包含各种预编译的加载器二进制文件
 - **U-Boot 官方文档**：https://docs.u-boot.org/
