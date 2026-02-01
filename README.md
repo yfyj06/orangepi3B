@@ -167,7 +167,7 @@ gpt write mmc 0 $partitions
 ```
 
 ## 参考资源
-
+- **https://opensource.rock-chips.com/wiki_Boot_option#rkxx_loader_vx.xx.xxx.bin
 - **Rockchip 官方开源仓库**：https://opensource.rock-chips.com/
 - **Rockchip rkbin 仓库**：包含各种预编译的加载器二进制文件
 - **U-Boot 官方文档**：https://docs.u-boot.org/
