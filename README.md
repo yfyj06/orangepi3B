@@ -71,173 +71,109 @@ rkdeveloptool db rkxx_loader_vx.xx.bin
 rkdeveloptool ul rkxx_loader_vx.xx.bin
 ```
 
-其中 `rkxx_loader_vx.xx.bin` 是 Rockchip 针对特定 SoC 发布的官方加载器文件，文件名中的 `xx` 代表 SoC 型号，`vx.xx` 代表版本号。
+Here we introduce how to write image to different Medeia device.
+这里我们介绍如何将图像写入不同的 Medeia 设备。
 
-#### 适用场景
+Get image Ready:
+准备好图片：
 
-此方法适用于生产环境或需要快速部署的场景，优点是简单可靠，缺点是使用闭源的二进制文件。
-
-### 方法二：从 Rockchip 二进制文件打包
-
-此方法适用于 SD 启动或需要自定义 eMMC 镜像的场景，将 Rockchip 提供的 DDR 初始化文件和 miniloader 组合打包。
-
-#### 操作步骤
-
+For with SPL:   对于 SPL 的情况：
 ```bash
-# 使用 mkimage 工具打包 DDR 初始化文件生成 idbloader.img
-tools/mkimage -n rkxxxx -T rksd -d rkxx_ddr_vx.xx.bin idbloader.img
-
-# 将 miniloader 追加到 idbloader.img 末尾
-cat rkxx_miniloader_vx.xx.bin >> idbloader.img
+idbloader.img
+u-boot.itb
+boot.img or boot folder with Image, dtb and exitlinulx inside
+boot.img 或 boot 文件夹，里面有 Image、dtb 和 exitlinulx
+rootfs.img
 ```
 
-#### 参数说明
+For with miniloader   用 miniloader 来处理
+```bash
+idbloader.img
+uboot.img
+trust.img
+boot.img or boot folder with Image, dtb and exitlinulx inside
+boot.img 或 boot 文件夹，里面有 Image、dtb 和 exitlinulx
+rootfs.img
+``` 
 
-- `-n rkxxxx`：指定目标 SoC 型号（如 rk3399、rk3568 等）
-- `-T rksd`：指定输出格式为 Rockchip SD 卡镜像
-- `-d rkxx_ddr_vx.xx.bin`：指定 DDR 初始化二进制文件作为输入
+Boot from eMMC  从 eMMC 启动
+The eMMC is on the hardware board, so we need:
+eMMC 在硬件板上，所以我们需要：
 
-#### 适用场景
+Get the board into maskrom mode;
+把棋盘调到 maskrom 模式 ;
+Connect the target to PC with USB cable;
+用 USB 线将目标连接到电脑;
+Flash the image to eMMC with rkdeveloptool
+用 rkdeveloptool 将图像刷入 eMMC
+Example commands for flash image to target.
+闪光灯图像到目标的示例命令。
 
-此方法适用于需要创建 SD 启动卡或自定义 eMMC 镜像的场景，提供了适度的灵活性。
-
-### 方法三：从 U-Boot TPL/SPL 打包
-
-此方法提供完全开源的解决方案，适用于需要完全控制引导过程的开发者。
-
-#### 操作步骤
+Flash the gpt partition to target:
+将 GPT 分区刷入目标：
 
 ```bash
-# 使用 mkimage 工具打包 U-Boot TPL 生成 idbloader.img
-tools/mkimage -n rkxxxx -T rksd -d tpl/u-boot-tpl.bin idbloader.img
-
-# 将 U-Boot SPL 追加到 idbloader.img 末尾
-cat spl/u-boot-spl.bin >> idbloader.img
+rkdeveloptool db rkxx_loader_vx.xx.bin
+rkdeveloptool gpt parameter_gpt.txt
 ```
-
-#### 优势
-
-- 完全开源，代码透明可审计。
-- 可以根据需要进行定制修改。
-- 与上游 U-Boot 社区保持同步更新。
-
-#### 适用场景
-
-此方法适用于开源社区开发者、需要深度定制引导流程的项目或对软件供应链安全有严格要求的场景。
-
----
-
-## 烧录与部署
-
-### 烧录位置
-
-无论使用哪种配置方法，生成的 idbloader.img 都需要烧录到存储介质的固定偏移地址：
-
-- **偏移地址**：`0x40`（十六进制）
-- **对应扇区**：64（十进制）
-
-### eMMC 烧录
-
-对于 eMMC 存储设备，使用 rkdeveloptool 工具进行烧录：
-
+For with SPL:   对于 SPL 的情况：
 ```bash
-# 从本地文件烧录 idbloader.img 到 eMMC 的 0x40 偏移地址
+rkdeveloptool db rkxx_loader_vx.xx.bin
 rkdeveloptool wl 0x40 idbloader.img
+rkdeveloptool wl 0x4000 u-boot.itb
+rkdeveloptool wl 0x8000 boot.img
+rkdeveloptool wl 0x40000 rootfs.img
+rkdeveloptool rd
 ```
 
-### SD/TF 卡烧录
+For with miniloader   用 miniloader 来处理
+```bash
+rkdeveloptool db rkxx_loader_vx.xx.bin
+rkdeveloptool ul rkxx_loader_vx.xx.bin
+rkdeveloptool wl 0x4000 uboot.img
+rkdeveloptool wl 0x6000 trust.img
+rkdeveloptool wl 0x8000 boot.img
+rkdeveloptool wl 0x40000 rootfs.img
+rkdeveloptool rd
+```
 
-对于 SD 卡或 TF 卡，使用 dd 命令进行烧录：
+Boot from SD/TF Card  从 SD/TF 卡启动
+We can write SD/TF card with Linux PC dd command very easily.
+我们可以非常轻松地用 Linux PC dd 命令写入 SD/TF 卡。
+
+Insert SD card to PC and we assume the /dev/sdb is the SD card device.
+插入 SD 卡到电脑，我们假设 /dev/sdb 是 SD 卡设备。
+
+For with SPL:   对于 SPL 的情况：
+```bash
+dd if=idbloader.img of=sdb seek=64
+dd if=u-boot.itb of=sdb seek=16384
+dd if=boot.img of=sdb seek=32768
+dd if=rootfs.img of=sdb seek=262144
+```
+For with miniloader:   对于迷你装载机：
+```bash
+dd if=idbloader.img of=sdb seek=64
+dd if=uboot.img of=sdb seek=16384
+dd if=trust.img of=sdb seek=24576
+dd if=boot.img of=sdb seek=32768
+dd if=rootfs.img of=sdb seek=262144
+```
+In order to make sure everything has write to SD card before unpluged, recommand to run below command:
+为了确保所有东西在拔掉电源前都写入 SD 卡，建议执行以下命令：
+
+sync
+Note, when using boot from SD card, need to update the kernel cmdline(which is in extlinux.conf) for the correct root value.
+注意，使用 SD 卡启动时，需要更新内核 cmdline（extlinux.conf 中）以获得正确的根值。
 
 ```bash
-# 将 idbloader.img 写入 SD 卡（假设设备节点为 sdb）
-dd if=idbloader.img of=/dev/sdb seek=64
-
-# 验证烧录结果
-dd if=/dev/sdb of=backup_idbloader.img skip=64 count=1 bs=512
+append  earlyprintk console=ttyS2,115200n8 rw root=/dev/mmcblk1p7 rootwait rootfstype=ext4 init=/sbin/init
 ```
-
-> **注意**：seek 参数的单位是扇区（512 字节），64 扇区正好对应 0x40（64 × 512 = 32768 = 0x8000）的字节偏移量，但 rkdeveloptool 使用的是扇区编号而非字节偏移。
-
----
-
-## 与其他引导组件的关系
-
-### 组件配合
-
-IDBLoader 本身只是启动链的一部分，需要与其他引导组件配合使用才能完成完整的系统启动过程。根据使用的方案不同，所需的组件也有所差异。
-
-#### 使用 U-Boot SPL 方式
-
-当采用完全开源的 U-Boot 方案时，需要准备以下组件：
-
-| 组件文件 | 描述 | 烧录位置 |
-|---------|------|---------|
-| idbloader.img | 包含 TPL 和 SPL 的预引导加载程序 | 0x40 |
-| u-boot.itb | U-Boot 固件镜像（包含 SPL、设备树和 U-Boot） | 0x4000 |
-| boot.img | Linux 内核引导镜像（可选） | 后续扇区 |
-| rootfs.img | 根文件系统镜像 | 后续扇区 |
-
-#### 使用 Rockchip miniloader 方式
-
-当采用 Rockchip 官方方案时，需要准备以下组件：
-
-| 组件文件 | 描述 | 烧录位置 |
-|---------|------|---------|
-| idbloader.img | 包含 DDR 初始化和 miniloader 的预引导加载程序 | 0x40 |
-| uboot.img | U-Boot 主引导程序 | 0x4000 |
-| trust.img | ARM Trusted Firmware（ATF）可信固件 | 0x6000 |
-| boot.img | Linux 内核引导镜像（可选） | 后续扇区 |
-| rootfs.img | 根文件系统镜像 | 后续扇区 |
-
-### 启动流程顺序
-
-完整的 Rockchip 设备启动流程如下：
-
-1. **BootRom**：上电后从 ROM 执行，初始化基本硬件，从存储设备加载 IDBLoader。
-2. **IDBLoader**：初始化 DDR 内存，加载并跳转到下一阶段引导程序。
-3. **U-Boot 或 miniloader**：提供完整的引导功能，包括加载内核、设备树和根文件系统。
-4. **Linux 内核**：接管系统控制权，启动用户空间。
-
----
-
-## 技术特点
-
-### 支持的启动介质
-
-IDBLoader 适用于 Rockchip 平台支持的多种启动介质：
-
-- **eMMC**：嵌入式多媒体卡，是 Rockchip 设备最常用的主存储介质。
-- **SD/TF 卡**：用于启动卡制作或可移动存储场景。
-- **SPI Flash**：需要特殊配置，通常与其他存储介质配合使用。
-
-### 版本兼容性
-
-- **SoC 型号支持**：支持不同 Rockchip SoC 型号，每个型号有特定的配置文件和打包参数。
-- **版本管理**：每个芯片有特定版本号的 DDR 初始化文件和 miniloader，需确保版本匹配。
-- **rkbin 兼容性**：与 Rockchip 官方 rkbin 仓库保持兼容，可使用其提供的预编译二进制文件。
-
----
-
-## 注意事项
-
-### 关键配置要点
-
-1. **偏移地址重要性**：必须烧录到正确的偏移地址（0x40 扇区），错误的偏移地址将导致系统无法启动。
-2. **版本匹配**：确保 DDR 初始化文件和 miniloader 版本与目标 SoC 完全匹配，不匹配的版本可能导致 DDR 初始化失败或系统不稳定。
-3. **工具版本**：使用的 mkimage 工具版本需要与目标平台匹配，工具版本不匹配可能导致生成的镜像无法正确加载。
-4. **启动模式**：某些启动模式（如从 SPI Flash 启动）需要特殊的配置选项（如 SPL_BACK_TO_BROM）。
-
-### 常见问题排查
-
-| 问题现象 | 可能原因 | 解决方案 |
-|---------|---------|---------|
-| 启动无响应 | IDBLoader 未正确烧录 | 检查烧录偏移地址和文件完整性 |
-| DDR 初始化失败 | DDR 初始化文件版本不匹配 | 使用与 SoC 匹配的 DDR 初始化文件 |
-| 加载后续阶段失败 | IDBlock 头部损坏 | 重新打包 idbloader.img |
-| SD 卡启动失败 | SD 卡格式问题 | 使用 FAT32 格式的 SD 卡 |
-
----
+Write GPT partition table to SD card in U-Boot, and then U-Boot can find the boot partition and run into kernel.
+在 U-Boot 中把 GPT 分区表写到 SD 卡上，然后 U-Boot 就能找到启动分区并运行内核。
+```bash
+gpt write mmc 0 $partitions
+```
 
 ## 参考资源
 
