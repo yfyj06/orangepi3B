@@ -49,18 +49,9 @@ IDBLoader.img 包含三个核心组件，它们协同工作完成启动初始化
 从启动流程可以看出，IDBLoader 是从存储设备（eMMC、SD 卡或 SPI Flash）的 0x40 扇区开始加载的，这个固定位置确保了 BootRom 能够准确找到并执行预引导加载程序。
 
 ---
-
-## 配置方法
-
-如果使用 Rockchip 发布的加载器，不需要单独打包 idbloader.img，可以直接从 eMMC 获取或使用烧录工具加载：
-
-```bash
-# 使用 rkdeveloptool 连接到设备并下载loader
-rkdeveloptool db rkxx_loader_vx.xx.bin
-
-# 使用 rkdeveloptool 上传loader到设备
-rkdeveloptool ul rkxx_loader_vx.xx.bin
-```
+Flash and boot from Media device
+从媒体设备刷机和启动
+---
 
 Here we introduce how to write image to different Medeia device.
 这里我们介绍如何将图像写入不同的 Medeia 设备。
@@ -87,16 +78,21 @@ boot.img 或 boot 文件夹，里面有 Image、dtb 和 exitlinulx
 rootfs.img
 ``` 
 
-Boot from eMMC  从 eMMC 启动
-The eMMC is on the hardware board, so we need:
-eMMC 在硬件板上，所以我们需要：
+### Boot from eMMC  从 eMMC 启动
 
-Get the board into maskrom mode;
-把棋盘调到 maskrom 模式 ;
-Connect the target to PC with USB cable;
-用 USB 线将目标连接到电脑;
+The eMMC is on the hardware board, so we need:
+eMMC 在硬件板上，所以我们需要
+
+Get the board into maskrom mode
+把棋盘调到 maskrom 模式
+
+Connect the target to PC with USB cable
+用 USB 线将目标连接到电脑
+
 Flash the image to eMMC with rkdeveloptool
 用 rkdeveloptool 将图像刷入 eMMC
+
+
 Example commands for flash image to target.
 闪光灯图像到目标的示例命令。
 
